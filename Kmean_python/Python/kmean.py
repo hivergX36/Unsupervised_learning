@@ -10,16 +10,25 @@ class Cluster_assignment:
         centroid_coordinate = []
         belonging_vector = []
         indice_vector = []
+        number_cluster = 0 
         
 
 
 class Kmean:
     
     def __init__(self):
+        
+        data_inertia = []
         centroid = []
         predictor = []
-        cluster= []
-        nbgroup = 0  
+        cluster = []
+        feature_size = 0 
+        nbgroup = 0
+        inertia = 0
+
+        
+    
+ 
         
    
     def checknumber(self,lignes,indice):
@@ -47,11 +56,13 @@ class Kmean:
         print("lines: ", lines)
         self.predictor = [self.checknumber(lines,k) for k in range(1,len(lines))]
         print("predictor: ", self.predictor)
+        self.feature_inertia.append(0)
         
     def rendom_centroid(self, nb_groups):
         self.nbgroup = nb_groups
-        number_features = len(self.predictor)
-        self.centroids = [[rand.random() for k in range(number_features)] for i in range(nb_groups)]
+        self.feature_size = len(self.predictor[0])
+        print("taille:", self.feature_size)
+        self.centroids = [[rand.random() for k in range(self.feature_size)] for i in range(nb_groups)]
         self.cluster = [Cluster_assignment(k) for k in range(nb_groups)]
         for(k) in range(nb_groups):
             self.cluster[k].centroid_coordinate = self.centroids[k]
@@ -60,17 +71,18 @@ class Kmean:
     def run_kmeans(self, nb_groups, MAX_ITERATION):
         number_iteration = 0 
         self.random_centroid(nb_groups)
+        self.get_calculate_assign()
+        self.update_cluster()
         
     def get_calculate_assign(self):
         min_index = 0 
         min_dist = 0 
         predictor_group_vector = [[] for i in range(self.nbgroup)]
         predictor_group_index = [[] for i in range(self.nbgroup)]
-        number_features = len(self.predictor)
-        for k in range(number_features):
+        for k in range(self.feature_size):
             distance = [0 for j in range(self.nbgroup)]
             for j in range(self.nbgroup): 
-                distance[j] = sum([self.predictor[k][i] - self.centroids[j][i] for i in range(len(self.predictor[k]))])
+                distance[j] = sum([(self.predictor[k][i] - self.centroids[j][i])**2 for i in range(len(self.predictor[k]))])
                 distance[j] = mp.sqrt(distance[j])
                 print("feature: ", k , " centroid: ", j  ," distance: " , distance[j])
             min_dist = min(distance)
@@ -84,11 +96,50 @@ class Kmean:
             self.cluster[i].indice_vector = predictor_group_index[i]
             
             
+    def update_centroid(self):
+        for i in range(self.nbgroup):
+            vector = [0 for compteur in range(self.feature_size)]
+            print("taille", self.feature_size)
+            print("vector", vector)
+            for k in range(len(self.cluster[i].belonging_vector)):
+                for l in range(self.feature_size):
+                    vector[l] += self.cluster[i].belonging_vector[k][l]
+                self.cluster[i].centroid_coordinate = [vector[j] / 3 for j in range(self.feature_size)]
+            
+            
     def update_cluster(self):
-        a = 10 
+        for i in range(self.nbgroup):
+            self.cluster[i].belonging_vector = []
+            self.cluster[i].indice_vector = []
+            
+            
+    def display_cluster(self):
+        for i in range(self.nbgroup):
+            print("cluster_centroid: ", self.cluster[i].centroid_coordinate)
+            print("cluster_vectors: ", self.cluster[i].belonging_vector)
+            
+            
+    def calculate_inertia(self):
+        self.inertia = 0 
+        for i in range(self.nbgroup):
+            distance = [0 for j in range(len(self.cluster[i].belonging_vector))]
+            for k in range(len(self.cluster[i].belonging_vector)):
+                distance[k] = sum([(self.cluster[i].belonging_vector[k][j] - self.cluster[i].centroid_coordinate[j])**2 for j in range(self.feature_size)])
+                distance[k] = mp.sqrt(distance[k])
+            self.inertia += sum(distance)
+        print("La variance intrasèque est: ", self.inertia)
+
+      
+        print("inertia_sequence: ", self.inertia)
+            
+            
             
             
         
+
+            
+   
+
         
         
         
