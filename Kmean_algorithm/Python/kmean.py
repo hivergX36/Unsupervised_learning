@@ -55,17 +55,17 @@ class Kmean:
         lines = [ re.sub("\n", "", lines[i]) for i in range(len(lines))]
         print("lines: ", lines)
         self.predictor = [self.checknumber(lines,k) for k in range(1,len(lines))]
-        print("predictor: ", self.predictor)
-        self.feature_inertia.append(0)
+        self.data_inertia = [0]
+
         
     def rendom_centroid(self, nb_groups):
         self.nbgroup = nb_groups
         self.feature_size = len(self.predictor[0])
-        print("taille:", self.feature_size)
-        self.centroids = [[rand.random() for k in range(self.feature_size)] for i in range(nb_groups)]
+        self.centroids = [[rand.randint(900,1000) for k in range(self.feature_size)] for i in range(nb_groups)]
         self.cluster = [Cluster_assignment(k) for k in range(nb_groups)]
         for(k) in range(nb_groups):
             self.cluster[k].centroid_coordinate = self.centroids[k]
+            print("centroid_: ",  self.cluster[k].centroid_coordinate )
         
     
     def run_kmeans(self, nb_groups, MAX_ITERATION):
@@ -84,13 +84,11 @@ class Kmean:
             for j in range(self.nbgroup): 
                 distance[j] = sum([(self.predictor[k][i] - self.centroids[j][i])**2 for i in range(len(self.predictor[k]))])
                 distance[j] = mp.sqrt(distance[j])
-                print("feature: ", k , " centroid: ", j  ," distance: " , distance[j])
             min_dist = min(distance)
             min_index = distance.index(min_dist)
             predictor_group_vector[min_index].append(self.predictor[k])
             predictor_group_index[min_index].append(k)
-        print(predictor_group_vector)
-        print(predictor_group_index)
+     
         for i in range(self.nbgroup):
             self.cluster[i].belonging_vector = predictor_group_vector[i]
             self.cluster[i].indice_vector = predictor_group_index[i]
@@ -99,12 +97,11 @@ class Kmean:
     def update_centroid(self):
         for i in range(self.nbgroup):
             vector = [0 for compteur in range(self.feature_size)]
-            print("taille", self.feature_size)
-            print("vector", vector)
             for k in range(len(self.cluster[i].belonging_vector)):
                 for l in range(self.feature_size):
                     vector[l] += self.cluster[i].belonging_vector[k][l]
-                self.cluster[i].centroid_coordinate = [vector[j] / 3 for j in range(self.feature_size)]
+            if len(self.cluster[i].belonging_vector) > 0:
+                self.cluster[i].centroid_coordinate = [vector[j] / len(self.cluster[i].belonging_vector) for j in range(self.feature_size)]
             
             
     def update_cluster(self):
@@ -128,9 +125,10 @@ class Kmean:
                 distance[k] = mp.sqrt(distance[k])
             self.inertia += sum(distance)
         print("La variance intrasèque est: ", self.inertia)
+        self.data_inertia.append(self.inertia)
 
       
-        print("inertia_sequence: ", self.inertia)
+        print("inertia_sequence: ", self.data_inertia)
             
             
             
