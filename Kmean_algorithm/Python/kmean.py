@@ -61,7 +61,7 @@ class Kmean:
     def rendom_centroid(self, nb_groups):
         self.nbgroup = nb_groups
         self.feature_size = len(self.predictor[0])
-        self.centroids = [[rand.randint(900,1000) for k in range(self.feature_size)] for i in range(nb_groups)]
+        self.centroids = [[rand.randint(0,2) for k in range(self.feature_size)] for i in range(nb_groups)]
         self.cluster = [Cluster_assignment(k) for k in range(nb_groups)]
         for(k) in range(nb_groups):
             self.cluster[k].centroid_coordinate = self.centroids[k]
@@ -79,10 +79,10 @@ class Kmean:
         min_dist = 0 
         predictor_group_vector = [[] for i in range(self.nbgroup)]
         predictor_group_index = [[] for i in range(self.nbgroup)]
-        for k in range(self.feature_size):
+        for k in range(len(self.predictor)):
             distance = [0 for j in range(self.nbgroup)]
             for j in range(self.nbgroup): 
-                distance[j] = sum([(self.predictor[k][i] - self.centroids[j][i])**2 for i in range(len(self.predictor[k]))])
+                distance[j] = sum([(self.cluster[j].centroid_coordinate[i] - self.predictor[k][i])**2 for i in range(self.feature_size)])
                 distance[j] = mp.sqrt(distance[j])
             min_dist = min(distance)
             min_index = distance.index(min_dist)
@@ -96,11 +96,11 @@ class Kmean:
             
     def update_centroid(self):
         for i in range(self.nbgroup):
-            vector = [0 for compteur in range(self.feature_size)]
-            for k in range(len(self.cluster[i].belonging_vector)):
-                for l in range(self.feature_size):
-                    vector[l] += self.cluster[i].belonging_vector[k][l]
             if len(self.cluster[i].belonging_vector) > 0:
+                vector = [0 for compteur in range(self.feature_size)]
+                for k in range(len(self.cluster[i].belonging_vector)):
+                    for l in range(self.feature_size):
+                        vector[l] += self.cluster[i].belonging_vector[k][l]
                 self.cluster[i].centroid_coordinate = [vector[j] / len(self.cluster[i].belonging_vector) for j in range(self.feature_size)]
             
             
